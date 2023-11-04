@@ -20,6 +20,7 @@ let userCount = 0;
 //object containing list of connected users
 const connectedUsers = {};
 const speakerLine = [];
+let currentSpeaker = null;
 
 //Listen for individual clients/users to connect
 io.sockets.on('connection', function (socket) {
@@ -35,7 +36,14 @@ io.sockets.on('connection', function (socket) {
 
     // Send the user their unique ID
     socket.emit('user-number', userCount);
-    socket.emit('is-speaker', isCurrentSpeaker(socket.id));
+
+    // Initialize the currentSpeaker variable when a user connects
+    if (currentSpeaker === null) {
+        currentSpeaker = speakerLine[0];
+        io.to(currentSpeaker).emit('is-speaker', true);
+    } else {
+        socket.emit('is-speaker', false);
+    }
 
 
     //Listen for a message named 'msg' from this client
@@ -98,17 +106,17 @@ function isCurrentSpeaker(socketId) {
 
 // Function to move the next user in the queue to be the current speaker
 function moveNextInQueueToSpeaker() {
-    if (speakerLine.length > 1) {
-        const currentSpeaker = speakerLine.shift();
-        speakerLine.push(currentSpeaker); // Move the current speaker to the end of the queue
+    if (speakerLine.length > 0) {
+        if (currentSpeaker) {
+            const index = speakerLine.indexOf(currentSpeaker);
+            if (index > -1) {
+                speakerLine.splice(index, 1);
+            }
+        }
+        currentSpeaker = speakerLine[0];
 
-        // The next person in the queue becomes the new speaker
-        const nextSpeaker = speakerLine[0];
-
-        // Notify the new speaker
-        io.to(nextSpeaker).emit('is-speaker', true);
-    }else{
-        const currentSpeaker = speakerLine[0];
-        
+        if (currentSpeaker) {
+            io.to(currentSpeaker).emit('is-speaker', true);
+        }
     }
 }

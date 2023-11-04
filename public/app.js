@@ -68,6 +68,8 @@ window.addEventListener('load', function () {
     let sendButton = document.getElementById('send-button');
 
     sendButton.addEventListener('click', function () {
+        
+        if(!msgInput.disabled){
         // let curName = nameInput.value;
         let curMsg = msgInput.value;
 
@@ -77,10 +79,13 @@ window.addEventListener('load', function () {
             "msg": curMsg,
             "textColor": textColor
         };
-
         //Send the message object to the server
         socket.emit('msg', msgObj);
         msgInput.value = '';
+        msgInput.disabled = true;
+        msgInput.placeholder = "Wait for your turn..."
+        }
+        
     });
 
     function getRandomColor() {
