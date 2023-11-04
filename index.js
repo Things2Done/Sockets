@@ -15,12 +15,31 @@ server.listen(port, () => {
 let io = require('socket.io');
 io = new io.Server(server);
 
+//create variable tracking users
+let userCount = 0;
+//object containing list of connected users
+const connectedUsers = {};
+const speakerLine = [];
+
 //Listen for individual clients/users to connect
-io.sockets.on('connection', function(socket) {
+io.sockets.on('connection', function (socket) {
     console.log("We have a new client: " + socket.id);
 
+    //count users who join
+    userCount++;
+
+    //store user number in socket
+    connectedUsers[socket.id] = userCount;
+
+    speakerLine.push(socket.id);
+
+    // Send the user their unique ID
+    socket.emit('user-number', userCount);
+    socket.emit('is-speaker', isCurrentSpeaker(socket.id));
+
+
     //Listen for a message named 'msg' from this client
-    socket.on('msg', function(data) {
+    socket.on('msg', function (data) {
         //Data can be numbers, strings, objects
         console.log("Received a 'msg' event");
         console.log(data);
@@ -33,10 +52,63 @@ io.sockets.on('connection', function(socket) {
 
         //Send a response to just this client
         // socket.emit('msg', data);
+        // Move the current speaker to the end of the queue
+        moveNextInQueueToSpeaker();
     });
 
     //Listen for this client to disconnect
-    socket.on('disconnect', function() {
+    socket.on('disconnect', function () {
         console.log("A client has disconnected: " + socket.id);
+
+        //get user number of departing user
+        const userNumber = connectedUsers[socket.id];
+        const isSpeaker = isCurrentSpeaker(socket.id);
+
+        // If the user existed, renumber the remaining users
+        if (userNumber) {
+            delete connectedUsers[socket.id];
+            userCount--;
+
+            // Remove the user from the speaker queue
+            const index = speakerLine.indexOf(socket.id);
+            if (index > -1) {
+                speakerLine.splice(index, 1);
+            }
+
+
+            // Renumber the remaining users
+            for (const id in connectedUsers) {
+                if (connectedUsers[id] > userNumber) {
+                    connectedUsers[id]--;
+                    // Send updated user numbers to clients
+                    io.to(id).emit('user-number', connectedUsers[id]);
+                }
+            }
+            // If the user was the current speaker, move to the next user in the queue
+            if (isSpeaker) {
+                moveNextInQueueToSpeaker();
+            }
+        };
     });
 });
+// Function to check if a user is the current speaker
+function isCurrentSpeaker(socketId) {
+    return speakerLine[0] === socketId;
+}
+
+// Function to move the next user in the queue to be the current speaker
+function moveNextInQueueToSpeaker() {
+    if (speakerLine.length > 1) {
+        const currentSpeaker = speakerLine.shift();
+        speakerLine.push(currentSpeaker); // Move the current speaker to the end of the queue
+
+        // The next person in the queue becomes the new speaker
+        const nextSpeaker = speakerLine[0];
+
+        // Notify the new speaker
+        io.to(nextSpeaker).emit('is-speaker', true);
+    }else{
+        const currentSpeaker = speakerLine[0];
+        
+    }
+}
