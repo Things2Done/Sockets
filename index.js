@@ -1,7 +1,11 @@
 //Initialize the express 'app' object
+let axios = require('axios');
 let express = require('express');
 let app = express();
 app.use('/', express.static('public'));
+
+// using CommonJS modules
+const fetch = require("isomorphic-unfetch");
 
 //Initialize the actual HTTP server
 let http = require('http');
@@ -21,6 +25,45 @@ let userCount = 0;
 const connectedUsers = {};
 const speakerLine = [];
 let currentSpeaker = null;
+
+const openaiApiKey = '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';
+
+async function generateChatGPTResponse(msgInput) {
+    try {
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+
+
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${openaiApiKey}`
+            },
+            body: JSON.stringify({
+                model: "gpt-3.5-turbo",
+                messages: [
+                    {
+                        "role": "system",
+                        "content": "You are a brilliant stand-up comedian who always has something funny to say. It is your role to take whatever is being talked abou and add a sentence and a half of humor. You are inapporpiate and on the cutting edge, but you always leave room for someone else to deliver a punch line so you leave your thoughts unfinished"
+                    },
+                    {
+                        "role": "user",
+                        "content": msgInput.value
+                    }
+                ],
+            })
+        });
+        
+        if (data.choices && data.choices.length > 0 && data.choices[0].message.content) {
+            return data.choices[0].message.content.trim();
+        } else {
+            console.error("Unexpected response structure from OpenAI:", data);
+            return "I'm sorry, I wasn't able to come up with a response.";
+        }
+    } catch (error) {
+        console.error("Error generating response from ChatGPT:", error);
+        return "There was an error generating a response. Please try again.";
+    }
+}
 
 //Listen for individual clients/users to connect
 io.sockets.on('connection', function (socket) {
@@ -47,7 +90,7 @@ io.sockets.on('connection', function (socket) {
 
 
     //Listen for a message named 'msg' from this client
-    socket.on('msg', function (data) {
+    socket.on('msg', async function (data) {
         //Data can be numbers, strings, objects
         console.log("Received a 'msg' event");
         console.log(data);
@@ -62,6 +105,15 @@ io.sockets.on('connection', function (socket) {
         // socket.emit('msg', data);
         // Move the current speaker to the end of the queue
         moveNextInQueueToSpeaker();
+
+        // Generate ChatGPT response and broadcast it
+        // const chatGptResponse = await generateChatGPTResponse(data.msg);
+        // io.sockets.emit('msg', {
+        //     name: 'GPT-3.5',
+        //     msg: chatGptResponse,
+        //     textColor: '#0000FF' // Or however you want to distinguish the bot's messages
+        // });
+
     });
 
     //Listen for this client to disconnect
