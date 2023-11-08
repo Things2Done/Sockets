@@ -1,8 +1,10 @@
 //Initialize the express 'app' object
-let axios = require('axios');
+// let axios = require('axios');
 let express = require('express');
 let app = express();
 app.use('/', express.static('public'));
+
+app.use(express.json());
 
 // using CommonJS modules
 const fetch = require("isomorphic-unfetch");
@@ -28,6 +30,12 @@ let currentSpeaker = null;
 
 const openaiApiKey = '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';
 
+app.get('/api/msg', async (req, res) =>  {
+    const msg = req.query.msg;
+    const result = generateChatGPTResponse({ value: msg });
+    res.json({ result });
+});
+
 async function generateChatGPTResponse(msgInput) {
     try {
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -52,6 +60,8 @@ async function generateChatGPTResponse(msgInput) {
                 ],
             })
         });
+
+        const data = await response.json();
         
         if (data.choices && data.choices.length > 0 && data.choices[0].message.content) {
             return data.choices[0].message.content.trim();
