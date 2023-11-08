@@ -1,0 +1,138 @@
+body {
+  background-color: #fdf6e4; /* Warm light background color */
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  color: #5a4b41; /* Warm dark brown text color for contrast */
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.sub-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1200px;
+  background: #fff5e5; /* Warm white color */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Enhanced shadow for a 3D effect */
+  border-radius: 12px; /* Smoothed corners */
+  overflow: hidden;
+  border: 3px solid #f4d1ae; /* Warm border color */
+  transition: transform 0.3s ease-in-out; /* Smooth transformation on hover */
+}
+
+.sub-container:hover {
+  transform: scale(1.02); /* Slight scale-up effect on hover */
+}
+
+.chat-input {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 15px;
+  background-color: #f9e9d6; /* Warm background for input area */
+}
+
+.chat-feed {
+  flex-direction: column;
+  padding: 15px;
+  height: 500px;
+  overflow-y: auto;
+  background-color: #fffaf0; /* Very light warm background for chat messages */
+}
+
+input, button {
+  padding: 10px;
+  margin: 0 10px 10px 0;
+  border: 1px solid #cc9e7b; /* Warm border color */
+  border-radius: 4px;
+  font-size: 16px;
+  background-color: #fffbf5; /* Warm color for input fields */
+}
+
+input:focus, button:focus {
+  border-color: #d6a567; /* Warm focus color */
+}
+
+.chat-input-name {
+  flex: 1;
+}
+
+.chat-input-msg {
+  flex: 4;
+}
+
+button {
+  background-color: #d6a567; /* Warm button color */
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s; /* Animated transform for feedback */
+}
+
+button:hover {
+  background-color: #b2835c; /* Slightly darker color on hover */
+  transform: translateY(-2px); /* "Lift" effect on hover */
+}
+
+.chat-header {
+  font-size: 28px;
+  color: #d6a567; /* Warm header color */
+  padding: 20px;
+  text-align: center;
+  background-color: #faf3e8; /* Warm header background */
+}
+
+.chat-box {
+  flex-grow: 1;
+  padding: 15px;
+  background: #fffbf5; /* Warm color for the chat box */
+  border-top: 1px solid #f4d1ae; /* Warm border color for separation */
+}
+
+p {
+  margin: 10px 0;
+}
+
+/* Magic Glow Effect */
+.chat-box::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  background-image: linear-gradient(60deg, rgba(255, 192, 203, 0.2), rgba(255, 160, 122, 0.2));
+  border-radius: 12px; /* Rounded corners */
+  transform: translateX(-50%);
+  z-index: -1;
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Magic Glow Effect on hover */
+.chat-box:hover::before {
+  opacity: 1; /* Show the glow effect */
+}
+
+@media (max-width: 800px) {
+  .sub-container {
+    width: 90%;
+  }
+
+  .chat-input-name, .chat-input-msg {
+    flex: 1;
+    margin: 0 0 10px 0;
+  }
+
+  button {
+    width: 100%;
+    margin-top: 0;
+  }
+}
